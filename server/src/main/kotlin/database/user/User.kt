@@ -12,11 +12,13 @@ object UserTable: Table("user") {
     val email = varchar("email",MAX_CHAR_LENGTH)
     val password = varchar("password",MAX_CHAR_LENGTH)
     val salt = varchar("salt",MAX_CHAR_LENGTH)
+
+    override val primaryKey = PrimaryKey(userid)
 }
 
 
 @Serializable
-data class User(val id: Int,
+data class User(val id: Int? = null,
                 val userid: String,
                 val username: String,
                 val email: String,

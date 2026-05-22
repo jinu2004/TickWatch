@@ -3,13 +3,10 @@ ktor:
     port: 8080
   application:
     modules:
-      - com.nxblack.HttpKt.configureHttp
-      - com.nxblack.MonitoringKt.configureMonitoring
-      - com.nxblack.SerializationKt.configureSerialization
-      - com.nxblack.SecurityKt.configureSecurity
-      - com.nxblack.SseKt.configureSse
-      - com.nxblack.ServerOpenTelemetryKt.configureOpenTelemetry
-      - com.nxblack.KoinKt.configureKoin
-      - com.nxblack.ExposedKt.configureExposed
-      - com.nxblack.WebsocketsKt.configureWebsockets
-      - com.nxblack.RoutingKt.configureRouting
+      - di.AppModuleKt.configureDI
+      - di.AppModuleKt.configureMonitoring
+      - di.AppModuleKt.configureSecurity
+      - di.AppModuleKt.configureSerialization
+      - di.AppModuleKt.configureRoute
+      - di.AppModuleKt.configureDatabase
+

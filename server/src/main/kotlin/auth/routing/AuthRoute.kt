@@ -6,21 +6,27 @@ import auth.security.token.*
 import auth.data.AuthResponse
 import auth.data.AuthSignInRequest
 import auth.data.AuthSignUpRequest
+import database.user.User
+import database.user.UserDatabaseService
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
+import io.konform.validation.Validation
+import io.konform.validation.constraints.maxLength
+import io.konform.validation.constraints.minLength
+import io.konform.validation.constraints.pattern
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-
+import java.util.UUID
 
 
 class AuthRoute(
     private val tokenConfig: TokenConfig,
     private val tokenService: TokenService,
     private val hashingService: HashingService,
-    private val userDataSource: com.nxblackstudio.infrastructure.database.auth_data.UserDataSource,
+    private val userDataSource: UserDatabaseService
 ) {
 
     fun Route.signUp() {
@@ -55,15 +61,15 @@ class AuthRoute(
 
             if (validateUser.isValid) {
                 val saltedHash = hashingService.generateSaltedHash(request.password)
-                val user = _root_ide_package_.com.nxblackstudio.infrastructure.database.auth_data.user.UserData(
-                    id = ObjectId().toString(),
+                val user = User(
                     email = request.email,
                     password = saltedHash.hash,
                     salt = saltedHash.salt,
                     username = request.username,
+                    userid = UUID.randomUUID().toString(),
                 )
 
-                val wasAcknowledged = userDataSource.insertUser(user)
+                val wasAcknowledged = userDataSource.insertNewUser(user)
 
                 if (wasAcknowledged) {
                     val accessToken = tokenService.generate(
@@ -71,7 +77,7 @@ class AuthRoute(
                         claims = arrayOf(
                             TokenClaims(
                                 name = TokenName.ID,
-                                value = user.id
+                                value = user.userid
                             ),
                             TokenClaims(
                                 name = TokenName.TYPE,
@@ -85,7 +91,7 @@ class AuthRoute(
                         claims = arrayOf(
                             TokenClaims(
                                 name = TokenName.ID,
-                                value = user.id
+                                value = user.userid
                             ),
                             TokenClaims(
                                 name = TokenName.TYPE,
@@ -138,7 +144,7 @@ class AuthRoute(
                 claims = arrayOf(
                     TokenClaims(
                         name = TokenName.ID,
-                        value = user.id
+                        value = user.userid
                     ),
                     TokenClaims(
                         name = TokenName.TYPE,
@@ -152,7 +158,7 @@ class AuthRoute(
                 claims = arrayOf(
                     TokenClaims(
                         name = TokenName.ID,
-                        value = user.id
+                        value = user.userid
                     ),
                     TokenClaims(
                         name = TokenName.TYPE,
@@ -187,7 +193,7 @@ class AuthRoute(
                     return@post
                 }
 
-                val user = userDataSource.getUserById(userId)
+                val user = userId?.let { userDataSource.getUserByUserId(it) }
 
                 if (user == null) {
                     call.respond(HttpStatusCode.Unauthorized, "User not Found")

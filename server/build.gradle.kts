@@ -38,11 +38,12 @@ dependencies {
     implementation(libs.h2database.r2dbc)
     implementation(libs.koin.ktor)
     implementation(libs.koin.loggerSlf4j)
-    implementation(libs.logback.classic)
-    implementation(libs.openfolder.kotlinAsyncapiKtor)
+    implementation("org.slf4j:slf4j-simple:2.0.18")
+    implementation(libs.konform.jvm)
     implementation(libs.ucasoft.ktorSimpleCache)
     implementation(libs.ucasoft.ktorSimpleRedisCache)
     implementation("org.postgresql:r2dbc-postgresql:1.1.1.RELEASE")
+    implementation("org.jetbrains.exposed:exposed-java-time:1.2.0")
 
 
 

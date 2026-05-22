@@ -8,8 +8,10 @@ logback = "1.5.21"
 opentelemetry = "1.52.0"
 opentelemetry-ktor = "2.18.0-alpha"
 opentelemetry-semconv = "1.34.0"
+konformJvm = "0.11.1"
 
 [libraries]
+konform-jvm = { module = "io.konform:konform-jvm", version.ref = "konformJvm" }
 exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed" }
 exposed-r2dbc = { module = "org.jetbrains.exposed:exposed-r2dbc", version.ref = "exposed" }
 h2database-h2 = { module = "com.h2database:h2", version.ref = "h2" }
