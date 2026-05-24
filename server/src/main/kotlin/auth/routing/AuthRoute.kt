@@ -1,11 +1,11 @@
 package auth.routing
 
-import auth.security.hashing.HashingService
-import auth.security.hashing.SaltedHash
-import auth.security.token.*
+import jwt_token.hashing.HashingService
+import jwt_token.hashing.SaltedHash
 import auth.data.AuthResponse
 import auth.data.AuthSignInRequest
 import auth.data.AuthSignUpRequest
+import auth.data.requireUser
 import database.user.User
 import database.user.UserDatabaseService
 import io.ktor.http.*
@@ -19,6 +19,11 @@ import io.konform.validation.constraints.pattern
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import jwt_token.token.TokenClaims
+import jwt_token.token.TokenConfig
+import jwt_token.token.TokenName
+import jwt_token.token.TokenService
+import jwt_token.token.TokenType
 import java.util.UUID
 
 
@@ -185,21 +190,7 @@ class AuthRoute(
     fun Route.authenticate() {
         authenticate {
             post("/authenticate") {
-                val principal = call.principal<JWTPrincipal>()
-                val userId = principal?.getClaim("id", String::class)
-                val type = principal?.getClaim("type", String::class)
-                if (type != "access") {
-                    call.respond(HttpStatusCode.Unauthorized, "Invalid token type")
-                    return@post
-                }
-
-                val user = userId?.let { userDataSource.getUserByUserId(it) }
-
-                if (user == null) {
-                    call.respond(HttpStatusCode.Unauthorized, "User not Found")
-                    return@post
-                }
-
+                val user = call.requireUser(userDataSource)
                 call.respond(HttpStatusCode.OK)
             }
         }
@@ -208,18 +199,8 @@ class AuthRoute(
     fun Route.getUserId() {
         authenticate {
             post("/userid") {
-
-                val principal = call.principal<JWTPrincipal>()
-
-                val userId = principal?.getClaim("id", String::class)
-                val type = principal?.getClaim("type", String::class)
-
-                if (type != "access") {
-                    call.respond(HttpStatusCode.Unauthorized, "Invalid token type")
-                    return@post
-                }
-
-                call.respond(HttpStatusCode.OK, userId ?: "No userId")
+                val user = call.requireUser(userDataSource)
+                call.respond(HttpStatusCode.OK, user.userid)
             }
         }
     }

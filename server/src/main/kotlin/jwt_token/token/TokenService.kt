@@ -1,4 +1,4 @@
-package auth.security.token
+package jwt_token.token
 
 interface TokenService {
     fun generate(config: TokenConfig, vararg claims: TokenClaims): String

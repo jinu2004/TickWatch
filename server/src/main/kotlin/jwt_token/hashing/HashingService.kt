@@ -1,4 +1,4 @@
-package auth.security.hashing
+package jwt_token.hashing
 
 interface HashingService {
     fun generateSaltedHash(value: String, saltLength: Int = 32): SaltedHash

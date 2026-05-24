@@ -1,20 +1,25 @@
 package di
 
+import agent.route.AgentRoute
+import agent.services.IngestionService
+import agent.services.IngestionSource
 import auth.routing.AuthRoute
-import auth.security.hashing.HashingService
-import auth.security.hashing.SHA256Hashing
-import auth.security.token.JwtTokenService
-import auth.security.token.TokenConfig
-import auth.security.token.TokenService
+import jwt_token.hashing.HashingService
+import jwt_token.hashing.SHA256Hashing
+import jwt_token.token.JwtTokenService
+import jwt_token.token.TokenConfig
+import jwt_token.token.TokenService
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import database.projects.ProjectDataService
+import database.projects.ProjectDataSource
+import database.projects.ProjectTable
 import database.user.UserDatabaseService
 import database.user.UserDatabaseSource
 import database.user.UserTable
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationEnvironment
-import io.ktor.server.application.ApplicationStarted
 import io.ktor.server.application.install
 import io.ktor.server.auth.Authentication
 import io.ktor.server.auth.jwt.JWTPrincipal
@@ -23,19 +28,17 @@ import io.ktor.server.plugins.calllogging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.request.path
 import io.ktor.server.routing.routing
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
-import org.jetbrains.exposed.v1.core.transactions.transactionScope
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
 import org.jetbrains.exposed.v1.r2dbc.SchemaUtils
 import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
-import org.jetbrains.exposed.v1.r2dbc.transactions.transactionManager
 import org.koin.dsl.module
 import org.koin.ktor.ext.inject
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
 import org.slf4j.event.Level
+import project.ProjectRouter
 
 
 private fun module(environment: ApplicationEnvironment) = module{
@@ -49,6 +52,7 @@ private fun module(environment: ApplicationEnvironment) = module{
     }
 
     single<UserDatabaseService>{ UserDatabaseSource(get()) }
+    single<ProjectDataService> { ProjectDataSource(get()) }
     single {
         TokenConfig(
             issuer = environment.config.propertyOrNull("jwt.issuer")?.getString() ?: "http://0.0.0.0:8080",
@@ -59,8 +63,12 @@ private fun module(environment: ApplicationEnvironment) = module{
     }
     single<TokenService> { JwtTokenService() }
     single<HashingService> { SHA256Hashing() }
-
+    single <IngestionService> { IngestionSource() }
     single { AuthRoute(get(),get(),get(),get()) }
+    single { ProjectRouter(get(),get())}
+    single { AgentRoute(get(),get()) }
+
+
 
 }
 
@@ -83,10 +91,10 @@ fun Application.configureDatabase(){
     runBlocking{
             suspendTransaction(database){
                 SchemaUtils.create(UserTable)
+                SchemaUtils.create(ProjectTable)
             }
         }
 }
-
 
 fun Application.configureSecurity() {
     val tokenConfig by inject<TokenConfig>()
@@ -118,6 +126,8 @@ fun Application.configureDI() {
 
 fun Application.configureRoute(){
     val authRoute by inject<AuthRoute>()
+    val projectRouter by inject<ProjectRouter>()
+    val agentRoute by inject<AgentRoute>()
     routing {
         authRoute.apply {
             signIn()
@@ -125,6 +135,14 @@ fun Application.configureRoute(){
             refreshToken()
             authenticate()
             getUserId()
+        }
+        projectRouter.apply {
+            createProject()
+            getAllProject()
+        }
+
+        agentRoute.apply {
+            ingestRoute()
         }
     }
 

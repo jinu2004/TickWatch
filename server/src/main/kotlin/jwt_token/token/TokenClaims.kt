@@ -1,4 +1,4 @@
-package auth.security.token
+package jwt_token.token
 
 data class TokenClaims(
     val name: TokenName,

@@ -79,7 +79,7 @@ class UserDatabaseSource(private val database: R2dbcDatabase): UserDatabaseServi
     override suspend fun getUserByEmail(email: String): User? {
         return suspendTransaction(database) {
             UserTable.selectAll()
-                .where { UserTable.userid eq email }
+                .where { UserTable.email eq email }
                 .map { row ->
                     User(
                         id = row[UserTable.id],

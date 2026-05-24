@@ -1,4 +1,4 @@
-package auth.security.hashing
+package jwt_token.hashing
 
 import org.apache.commons.codec.binary.Hex
 import org.apache.commons.codec.digest.DigestUtils
