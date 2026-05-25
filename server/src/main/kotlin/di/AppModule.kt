@@ -159,6 +159,7 @@ fun Application.configureRoute(){
         agentRoute.apply {
             ingestRoute()
             suspicionData()
+            metricsData()
         }
     }
 

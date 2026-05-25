@@ -1,6 +1,7 @@
 package database.agent.repository
 
 import agent.batch.MetricPayload
+import agent.query.MetricFilter
 import java.util.UUID
 
 interface MetricDataRepository {
@@ -9,4 +10,8 @@ interface MetricDataRepository {
                           projectID: String,
                           serverID: String,
                           metrics: List<MetricPayload>)
+    suspend fun getMetrics(
+        projectID: String,
+        filter: MetricFilter
+    ): List<MetricPayload>
 }

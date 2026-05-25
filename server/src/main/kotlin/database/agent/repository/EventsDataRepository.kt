@@ -1,6 +1,7 @@
 package database.agent.repository
 
 import agent.batch.EventPayload
+import agent.query.EventFilter
 import java.util.*
 
 interface EventsDataRepository {
@@ -8,4 +9,9 @@ interface EventsDataRepository {
                           projectID: String,
                           serverID: String,
                           events: List<EventPayload>)
+
+    suspend fun getEvents(
+        projectID: String,
+        filter: EventFilter
+    ): List<EventPayload>
 }

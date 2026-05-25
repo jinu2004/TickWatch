@@ -1,6 +1,7 @@
 package database.agent.repository
 
 import agent.batch.SuspicionEvent
+import agent.query.SuspicionFilter
 import java.util.UUID
 
 interface SuspicionDataRepository {
@@ -12,4 +13,5 @@ interface SuspicionDataRepository {
     )
 
     suspend fun getLatest(projectID: String,limit: Int = 50): List<SuspicionEvent>
+    suspend fun getFiltered(projectID: String, filter: SuspicionFilter): List<SuspicionEvent>
 }
