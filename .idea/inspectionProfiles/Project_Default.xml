@@ -11,6 +11,7 @@
         <set>
           <option value="x-api-key" />
           <option value="tw-api-key" />
+          <option value="tw_project_id" />
         </set>
       </option>
     </inspection_tool>

@@ -2,8 +2,8 @@ package project
 
 import auth.data.requireUser
 import database.projects.Project
-import database.projects.ProjectDataService
-import database.user.UserDatabaseService
+import database.projects.ProjectDataRepository
+import database.user.UserDatabaseRepository
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -16,13 +16,13 @@ import java.time.Instant
 import java.util.*
 
 class ProjectRouter(
-    private  val userDatabaseService: UserDatabaseService,
-    private  val projectDataService: ProjectDataService)
+    private  val userDatabaseRepository: UserDatabaseRepository,
+    private  val projectDataRepository: ProjectDataRepository)
 {
     fun Route.createProject(){
         authenticate {
             post("/createNewProject") {
-                val user = call.requireUser(userDatabaseService)
+                val user = call.requireUser(userDatabaseRepository)
                 val request = call.receiveNullable<ProjectCreateRequest>() ?: run {
                     call.respond(HttpStatusCode.BadRequest)
                     return@post
@@ -32,7 +32,7 @@ class ProjectRouter(
                     id = UUID.randomUUID().toString(), userId = user.userid, projectName = request.name, apiToken = api,
                     createdAt = Instant.now()
                 )
-                projectDataService.createNewProject(project)
+                projectDataRepository.createNewProject(project)
                 call.respond(
                     HttpStatusCode.Created,
                     ProjectResponse(
@@ -49,8 +49,8 @@ class ProjectRouter(
     fun Route.getAllProject(){
         authenticate {
             get("list_projects"){
-                val user = call.requireUser(userDatabaseService)
-                val list = projectDataService.getAllProjectByUserId(user.userid)
+                val user = call.requireUser(userDatabaseRepository)
+                val list = projectDataRepository.getAllProjectByUserId(user.userid)
                 call.respond(HttpStatusCode.OK, ProjectList(list))
 
 

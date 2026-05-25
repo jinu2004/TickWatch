@@ -11,7 +11,7 @@ import org.jetbrains.exposed.v1.r2dbc.selectAll
 import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 import org.jetbrains.exposed.v1.r2dbc.update
 
-class ProjectDataSource(private val database: R2dbcDatabase): ProjectDataService {
+class ProjectDataSource(private val database: R2dbcDatabase): ProjectDataRepository {
     override suspend fun createNewProject(project: Project): Boolean {
         return suspendTransaction(database){
 
@@ -64,6 +64,22 @@ class ProjectDataSource(private val database: R2dbcDatabase): ProjectDataService
         return suspendTransaction(database) {
             ProjectTable.selectAll()
                 .where{ ProjectTable.apiToken eq key}
+                .map { it->
+                    Project(
+                        id = it[ProjectTable.id],
+                        userId = it[ProjectTable.userId],
+                        projectName = it[ProjectTable.projectName],
+                        apiToken = it[ProjectTable.apiToken],
+                        createdAt = it[ProjectTable.createdAt]
+                    )
+                }.singleOrNull()
+        }
+    }
+
+    override suspend fun getProjectById(key: String): Project? {
+        return suspendTransaction(database) {
+            ProjectTable.selectAll()
+                .where{ ProjectTable.id eq key}
                 .map { it->
                     Project(
                         id = it[ProjectTable.id],

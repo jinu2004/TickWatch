@@ -7,7 +7,7 @@ import auth.data.AuthSignInRequest
 import auth.data.AuthSignUpRequest
 import auth.data.requireUser
 import database.user.User
-import database.user.UserDatabaseService
+import database.user.UserDatabaseRepository
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -31,7 +31,7 @@ class AuthRoute(
     private val tokenConfig: TokenConfig,
     private val tokenService: TokenService,
     private val hashingService: HashingService,
-    private val userDataSource: UserDatabaseService
+    private val userDataSource: UserDatabaseRepository
 ) {
 
     fun Route.signUp() {

@@ -1,14 +1,14 @@
 package auth.data
 
 import database.user.User
-import database.user.UserDatabaseService
+import database.user.UserDatabaseRepository
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.principal
 import io.ktor.server.response.respond
 
-suspend fun ApplicationCall.authenticateUser(userDatabaseService: UserDatabaseService): User?{
+suspend fun ApplicationCall.authenticateUser(userDatabaseRepository: UserDatabaseRepository): User?{
     val principal = principal<JWTPrincipal>()
         ?: return null
 
@@ -26,16 +26,16 @@ suspend fun ApplicationCall.authenticateUser(userDatabaseService: UserDatabaseSe
         String::class
     ) ?: return null
 
-    return userDatabaseService
+    return userDatabaseRepository
         .getUserByUserId(userId)
 }
 
 suspend fun ApplicationCall.requireUser(
-    userDatabaseService: UserDatabaseService
+    userDatabaseRepository: UserDatabaseRepository
 ): User {
 
     return authenticateUser(
-        userDatabaseService
+        userDatabaseRepository
     ) ?: run {
         respond(
             HttpStatusCode.Unauthorized,

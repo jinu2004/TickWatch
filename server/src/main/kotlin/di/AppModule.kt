@@ -4,30 +4,30 @@ import agent.route.AgentRoute
 import agent.services.IngestionService
 import agent.services.IngestionSource
 import auth.routing.AuthRoute
+import com.auth0.jwt.JWT
+import com.auth0.jwt.algorithms.Algorithm
+import database.agent.repository.*
+import database.agent.sources.*
+import database.agent.tables.*
+import database.projects.ProjectDataRepository
+import database.projects.ProjectDataSource
+import database.projects.ProjectTable
+import database.user.UserDatabaseRepository
+import database.user.UserDatabaseSource
+import database.user.UserTable
+import io.ktor.serialization.kotlinx.json.*
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
+import io.ktor.server.plugins.calllogging.*
+import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.request.*
+import io.ktor.server.routing.*
 import jwt_token.hashing.HashingService
 import jwt_token.hashing.SHA256Hashing
 import jwt_token.token.JwtTokenService
 import jwt_token.token.TokenConfig
 import jwt_token.token.TokenService
-import com.auth0.jwt.JWT
-import com.auth0.jwt.algorithms.Algorithm
-import database.projects.ProjectDataService
-import database.projects.ProjectDataSource
-import database.projects.ProjectTable
-import database.user.UserDatabaseService
-import database.user.UserDatabaseSource
-import database.user.UserTable
-import io.ktor.serialization.kotlinx.json.json
-import io.ktor.server.application.Application
-import io.ktor.server.application.ApplicationEnvironment
-import io.ktor.server.application.install
-import io.ktor.server.auth.Authentication
-import io.ktor.server.auth.jwt.JWTPrincipal
-import io.ktor.server.auth.jwt.jwt
-import io.ktor.server.plugins.calllogging.CallLogging
-import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.server.request.path
-import io.ktor.server.routing.routing
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
@@ -51,8 +51,16 @@ private fun module(environment: ApplicationEnvironment) = module{
         )
     }
 
-    single<UserDatabaseService>{ UserDatabaseSource(get()) }
-    single<ProjectDataService> { ProjectDataSource(get()) }
+    single<UserDatabaseRepository> { UserDatabaseSource(get()) }
+    single<ProjectDataRepository> { ProjectDataSource(get()) }
+    single<RawBatchDataRepository> { RawBatchDataSource(get()) }
+    single<MetricDataRepository> { MetricDataDataSource(get()) }
+    single<EventsDataRepository> { EventsDataSource(get()) }
+    single<SuspicionDataRepository> { SuspicionDataSource(get()) }
+    single<LogsDataRepository> { LogsDataSource(get()) }
+
+
+
     single {
         TokenConfig(
             issuer = environment.config.propertyOrNull("jwt.issuer")?.getString() ?: "http://0.0.0.0:8080",
@@ -63,10 +71,10 @@ private fun module(environment: ApplicationEnvironment) = module{
     }
     single<TokenService> { JwtTokenService() }
     single<HashingService> { SHA256Hashing() }
-    single <IngestionService> { IngestionSource() }
+    single<IngestionService> { IngestionSource(get(), get(), get(), get(), get()) }
     single { AuthRoute(get(),get(),get(),get()) }
     single { ProjectRouter(get(),get())}
-    single { AgentRoute(get(),get()) }
+    single { AgentRoute(get(), get(), get(), get(), get(), get(), get()) }
 
 
 
@@ -90,8 +98,15 @@ fun Application.configureDatabase(){
 
     runBlocking{
             suspendTransaction(database){
-                SchemaUtils.create(UserTable)
-                SchemaUtils.create(ProjectTable)
+                SchemaUtils.create(
+                    UserTable,
+                    ProjectTable,
+                    EventsTable,
+                    SuspicionTable,
+                    MetricsTable,
+                    RawBatchesTable,
+                    LogsTable
+                )
             }
         }
 }
@@ -143,6 +158,7 @@ fun Application.configureRoute(){
 
         agentRoute.apply {
             ingestRoute()
+            suspicionData()
         }
     }
 

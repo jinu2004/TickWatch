@@ -3,11 +3,9 @@ package agent.batch.enums
 import kotlinx.serialization.Serializable
 
 @Serializable
-enum class AggregationType {
-    AVG,
-    SUM,
-    MAX,
-    MIN,
-    COUNT,
-    LAST
+enum class LogLevel {
+    INFO,
+    WARN,
+    ERROR,
+    DEBUG
 }

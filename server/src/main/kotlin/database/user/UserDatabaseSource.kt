@@ -1,7 +1,6 @@
 package database.user
 
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.single
 import kotlinx.coroutines.flow.singleOrNull
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
@@ -10,7 +9,7 @@ import org.jetbrains.exposed.v1.r2dbc.selectAll
 import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 import org.jetbrains.exposed.v1.r2dbc.update
 
-class UserDatabaseSource(private val database: R2dbcDatabase): UserDatabaseService {
+class UserDatabaseSource(private val database: R2dbcDatabase): UserDatabaseRepository {
 
 
 
