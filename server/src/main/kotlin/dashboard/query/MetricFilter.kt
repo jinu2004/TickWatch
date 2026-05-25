@@ -1,15 +1,16 @@
-package agent.query
+package dashboard.query
 
+import agent.batch.enums.AggregationType
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class EventFilter(
-    val event: String? = null,
+data class MetricFilter(
+    val metric: String? = null,
     val entityId: String? = null,
     val entityType: String? = null,
     val serverId: String? = null,
     val fromTimestamp: Long? = null,
     val toTimestamp: Long? = null,
-    val limit: Int = 100,
-    val offset: Long = 0
+    val aggregationType: AggregationType? = null,
+    val limit: Int = 100
 )

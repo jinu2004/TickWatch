@@ -6,6 +6,7 @@ import agent.services.IngestionSource
 import auth.routing.AuthRoute
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import dashboard.routes.DashboardRoute
 import database.agent.repository.*
 import database.agent.sources.*
 import database.agent.tables.*
@@ -74,7 +75,8 @@ private fun module(environment: ApplicationEnvironment) = module{
     single<IngestionService> { IngestionSource(get(), get(), get(), get(), get()) }
     single { AuthRoute(get(),get(),get(),get()) }
     single { ProjectRouter(get(),get())}
-    single { AgentRoute(get(), get(), get(), get(), get(), get(), get()) }
+    single { AgentRoute(get(), get()) }
+    single { DashboardRoute(get(), get(), get(), get(), get(),get()) }
 
 
 
@@ -143,6 +145,7 @@ fun Application.configureRoute(){
     val authRoute by inject<AuthRoute>()
     val projectRouter by inject<ProjectRouter>()
     val agentRoute by inject<AgentRoute>()
+    val dashboardRoute by inject<DashboardRoute>()
     routing {
         authRoute.apply {
             signIn()
@@ -158,8 +161,13 @@ fun Application.configureRoute(){
 
         agentRoute.apply {
             ingestRoute()
+        }
+
+        dashboardRoute.apply {
             suspicionData()
             metricsData()
+            eventData()
+            logData()
         }
     }
 

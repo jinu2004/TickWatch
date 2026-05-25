@@ -1,4 +1,4 @@
-package agent.query
+package dashboard.query
 
 import agent.batch.enums.Severity
 import kotlinx.serialization.Serializable

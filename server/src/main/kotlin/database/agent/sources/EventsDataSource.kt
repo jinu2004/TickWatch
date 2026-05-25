@@ -1,7 +1,7 @@
 package database.agent.sources
 
 import agent.batch.EventPayload
-import agent.query.EventFilter
+import dashboard.query.EventFilter
 import database.agent.repository.EventsDataRepository
 import database.agent.tables.EventsTable
 import kotlinx.coroutines.flow.map

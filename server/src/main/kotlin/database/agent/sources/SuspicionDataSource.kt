@@ -3,7 +3,7 @@ package database.agent.sources
 
 
 import agent.batch.SuspicionEvent
-import agent.query.SuspicionFilter
+import dashboard.query.SuspicionFilter
 import database.agent.repository.SuspicionDataRepository
 import database.agent.tables.SuspicionTable
 import kotlinx.coroutines.flow.map

@@ -1,7 +1,7 @@
 package database.agent.sources
 
 import agent.batch.MetricPayload
-import agent.query.MetricFilter
+import dashboard.query.MetricFilter
 import database.agent.repository.MetricDataRepository
 import database.agent.tables.MetricsTable
 import kotlinx.coroutines.flow.map

@@ -1,7 +1,7 @@
 package database.agent.repository
 
 import agent.batch.SuspicionEvent
-import agent.query.SuspicionFilter
+import dashboard.query.SuspicionFilter
 import java.util.UUID
 
 interface SuspicionDataRepository {

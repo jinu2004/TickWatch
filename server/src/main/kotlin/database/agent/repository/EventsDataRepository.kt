@@ -1,7 +1,7 @@
 package database.agent.repository
 
 import agent.batch.EventPayload
-import agent.query.EventFilter
+import dashboard.query.EventFilter
 import java.util.*
 
 interface EventsDataRepository {

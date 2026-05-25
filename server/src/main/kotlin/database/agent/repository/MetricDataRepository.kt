@@ -1,7 +1,7 @@
 package database.agent.repository
 
 import agent.batch.MetricPayload
-import agent.query.MetricFilter
+import dashboard.query.MetricFilter
 import java.util.UUID
 
 interface MetricDataRepository {
