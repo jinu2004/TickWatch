@@ -3,15 +3,23 @@ package dashboard.routes
 import agent.batch.enums.AggregationType
 import agent.batch.enums.LogLevel
 import agent.batch.enums.Severity
+import dashboard.RealtimeEventBus
 import dashboard.query.EventFilter
+import dashboard.query.LiveFilter
 import dashboard.query.LogFilter
 import dashboard.query.MetricFilter
+import dashboard.query.RealtimeEvent
+import dashboard.query.RealtimeType
 import dashboard.query.SuspicionFilter
 import database.agent.repository.*
 import database.projects.ProjectDataRepository
 import io.ktor.http.*
+import io.ktor.server.application.log
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.sse.sse
+import io.ktor.sse.ServerSentEvent
+import kotlinx.serialization.json.Json
 
 class DashboardRoute(
     private val projectDataRepository: ProjectDataRepository,
@@ -19,7 +27,8 @@ class DashboardRoute(
     private val rawBatchDataRepository: RawBatchDataRepository,
     private val metricDataRepository: MetricDataRepository,
     private val eventsDataRepository: EventsDataRepository,
-    private val logsDataRepository: LogsDataRepository
+    private val logsDataRepository: LogsDataRepository,
+    private val realtimeEventBus: RealtimeEventBus
 ) {
     fun Route.suspicionData(){
         post("/dashboard/suspicion"){
@@ -124,5 +133,104 @@ class DashboardRoute(
             call.respond(result)
         }
     }
+
+    fun Route.liveData(){
+            sse("/dashboard/live") {
+                val requestProjectID = call.parameters["tw_project_id"] ?: run {
+                    HttpStatusCode.BadGateway
+                    return@sse
+                }
+
+                val project = projectDataRepository.getProjectById(requestProjectID) ?:run {
+                    HttpStatusCode.Unauthorized
+                    return@sse
+                }
+
+                val filter =
+                    LiveFilter(
+                        type = call.parameters["type"]?.let { RealtimeType.valueOf(it) },
+                        serverId = call.parameters["serverId"],
+                        entityId = call.parameters["entityId"],
+                        severity = call.parameters["severity"]?.let { Severity.valueOf(it)},
+                        metric = call.parameters["metric"],
+                        event = call.parameters["event"]
+                    )
+
+
+                send(
+                    ServerSentEvent(
+                        data = "connected"
+                    )
+                )
+
+                println(
+                    realtimeEventBus.hashCode()
+                )
+
+
+                realtimeEventBus.events.collect { rtEvents ->
+                    println(rtEvents.projectId)
+                    println(project.id)
+
+                    if (rtEvents.projectId != project.id) return@collect
+                    if (!matchesFilter(rtEvents, filter)) return@collect
+                    send(
+                        ServerSentEvent(data = Json.encodeToString(rtEvents))
+                    )
+
+
+            }
+
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+    private fun matchesFilter(event: RealtimeEvent, filter: LiveFilter): Boolean {
+        if (
+            filter.type != null &&
+            event.type != filter.type
+        ) return false
+
+        if (
+            filter.serverId != null &&
+            event.serverId !=
+            filter.serverId
+        ) return false
+
+        if (
+            filter.entityId != null &&
+            event.entityId !=
+            filter.entityId
+        ) return false
+
+        if (
+            filter.severity != null &&
+            event.severity !=
+            filter.severity
+        ) return false
+
+        if (
+            filter.metric != null &&
+            event.metric !=
+            filter.metric
+        ) return false
+
+        if (
+            filter.event != null &&
+            event.event !=
+            filter.event
+        ) return false
+
+        return true
+    }
+
 
 }

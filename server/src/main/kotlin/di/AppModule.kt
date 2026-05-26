@@ -6,6 +6,7 @@ import agent.services.IngestionSource
 import auth.routing.AuthRoute
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import dashboard.RealtimeEventBus
 import dashboard.routes.DashboardRoute
 import database.agent.repository.*
 import database.agent.sources.*
@@ -24,6 +25,7 @@ import io.ktor.server.plugins.calllogging.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
+import io.ktor.server.sse.SSE
 import jwt_token.hashing.HashingService
 import jwt_token.hashing.SHA256Hashing
 import jwt_token.token.JwtTokenService
@@ -72,12 +74,12 @@ private fun module(environment: ApplicationEnvironment) = module{
     }
     single<TokenService> { JwtTokenService() }
     single<HashingService> { SHA256Hashing() }
-    single<IngestionService> { IngestionSource(get(), get(), get(), get(), get()) }
+    single<IngestionService> { IngestionSource(get(), get(), get(), get(), get(),get()) }
     single { AuthRoute(get(),get(),get(),get()) }
     single { ProjectRouter(get(),get())}
     single { AgentRoute(get(), get()) }
-    single { DashboardRoute(get(), get(), get(), get(), get(),get()) }
-
+    single { DashboardRoute(get(), get(), get(), get(), get(),get(),get()) }
+    single { RealtimeEventBus() }
 
 
 }
@@ -87,6 +89,10 @@ fun Application.configureMonitoring() {
         level = Level.INFO
         filter { call -> call.request.path().startsWith("/") }
     }
+}
+
+fun Application.configureSSE(){
+    install(SSE)
 }
 
 fun Application.configureSerialization() {
@@ -168,6 +174,7 @@ fun Application.configureRoute(){
             metricsData()
             eventData()
             logData()
+            liveData()
         }
     }
 

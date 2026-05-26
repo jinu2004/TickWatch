@@ -4,9 +4,11 @@ ktor:
   application:
     modules:
       - di.AppModuleKt.configureDI
+      - di.AppModuleKt.configureSSE
       - di.AppModuleKt.configureMonitoring
       - di.AppModuleKt.configureSecurity
       - di.AppModuleKt.configureSerialization
       - di.AppModuleKt.configureRoute
       - di.AppModuleKt.configureDatabase
+
 
